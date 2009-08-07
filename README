@@ -1,0 +1,17 @@
+Eviscape Api Toolkit 1.0 (pyeviscape)
+
+Requirements:
+1. Python 2.5+
+2. Eviscape Api Key and secret:
+
+Get API Key and API secret from
+http://www.eviscape.com/apps/new
+
+Provide it in config.py
+
+Examples:
+
+>>>from pyeviscape.eviscape import Nodes
+>>>print Nodes(id=17).get()
+
+See examples.py for more examples

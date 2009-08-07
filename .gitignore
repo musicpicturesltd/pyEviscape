@@ -1,0 +1,8 @@
+*.swp
+*.pyc
+**/*.swp
+**/*.swo
+**/*.pyc
+.google_appengine
+index.yaml
+resp.html
