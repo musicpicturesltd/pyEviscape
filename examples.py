@@ -34,7 +34,8 @@ except:#blind
     print "You can get it from:"
     print "http://www.eviscape.com/apps/new"
     print "If you already have API_KEY and API_SECRET then remove blind except and see what you'r missing :)"
-    print "Now I'll run methods without access token :("    
+    print "Now I'll run methods without access token :("
+    access_token = None
     
 #Eviscape Api specific
 print "Searching 'deepak' on Eviscape ..."
@@ -52,7 +53,7 @@ print "Press enter to continue ..."
 raw_input()
     
 print "Getting nodes of 'iapain' ..."
-for n in Nodes.get_for_member('iapain'):
+for n in Nodes.get_for_member('iapain', access_token=access_token):
     print n
 
 print "Press enter to continue ..."
@@ -75,6 +76,13 @@ print "Getting evi with evi_id=6369 and nod_id=157..."
 n = Nodes(id=157)
 evi = Evis(id=6369, node=n).get()
 print evi
+
+print "Press enter to continue ..."
+raw_input()
+
+print "Getting timeline for 'iapain'"
+for e in Evis.timeline(Members(id=13),n,access_token=access_token):
+    print e.subject
 
 print "Press enter to continue ..."
 raw_input()

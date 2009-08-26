@@ -258,7 +258,7 @@ class Nodes(object):
             return _handle_node_xml(data)
     
     def __str__(self):
-        return smart_str("Node Object: %s (%s)" % (self.id, self.nod_permalink))
+        return smart_str("Node Object: %s (%s)" % (self.id, self.nod_name))
 
 class Evis(object):
     """ Represents Evis on Eviscape """
@@ -340,6 +340,24 @@ class Evis(object):
             return _handle_evis_json(data)[0]
         else:
             return _handle_evis_xml(data)[0]
+            
+    @classmethod
+    def timeline(self, member, node, access_token):
+        """
+        Get timeline for a member
+        Usage: Evis.timeline(memberobj, nodeobj, 'token')
+        Returns: List of evis
+        Eviscape API method: evis.timeline
+        """
+        method = "evis.timeline"
+        data = request_protected_post(method, access_token, mem_id=member.id,\
+                                      nod_id=node.id, per_page=100, page=1)
+        
+        if FORMATTER == 'json':
+            return _handle_evis_json(data)[0]
+        else:
+            return _handle_evis_xml(data)[0]
+        
     
     @classmethod
     def xsearch(self, query, access_token=None):
@@ -689,7 +707,7 @@ def _parse_member_json(m):
 
 
 def _parse_node_json(n):
-    nod = n.get('nodes', {})
+    nod = n.get('node', {})
     if nod.has_key('mem_id'):
         m = Members(int(nod['mem_id']))
     else:
