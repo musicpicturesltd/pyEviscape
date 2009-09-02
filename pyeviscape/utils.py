@@ -181,7 +181,7 @@ def request_get(method, **params):
     params = prepare_params(params)
     url = '%s?method=%s&format=%s&nojsoncallback&%s' % (API_URL, method, FORMATTER, urlencode(params))
     if FORMATTER == 'json':
-        return simplejson.loads(http_pool.get_url(url).data)
+        return get_data_json(simplejson.loads(http_pool.get_url(url).data))
     return get_data_xml(minidom.parseString(http_pool.get_url(url).data))
 
 def request_protected_get(method, access_token, **params):
@@ -194,7 +194,7 @@ def request_protected_get(method, access_token, **params):
     oauth_request = request_oauth_resource(CONSUMER, url, access_token, parameters=p)
     print oauth_request.to_url()
     if FORMATTER == 'json':
-        return simplejson.loads(http_pool.get_url(oauth_request.to_url()).data)
+        return get_data_json(simplejson.loads(http_pool.get_url(oauth_request.to_url()).data))
     return get_data_xml(minidom.parseString(http_pool.get_url(oauth_request.to_url()).data))
 
 def request_protected_post(method, access_token, **params):
