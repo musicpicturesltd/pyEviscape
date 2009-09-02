@@ -171,6 +171,12 @@ def get_data_xml(xml):
         raise EviscapeError, msg
     return data
 
+def get_data_json(json):
+    if json['stat'] != 'ok':
+        msg = "ERROR [%s]: %s" % (json['code'], json['msg'])
+        raise EviscapeError, msg
+    return json
+
 def request_get(method, **params):
     params = prepare_params(params)
     url = '%s?method=%s&format=%s&nojsoncallback&%s' % (API_URL, method, FORMATTER, urlencode(params))
@@ -200,7 +206,7 @@ def request_protected_post(method, access_token, **params):
     url = '%s?method=%s&format=%s&nojsoncallback&%s' % (API_URL, method, FORMATTER, urlencode(params))
     oauth_request = request_oauth_resource(CONSUMER, url, access_token, parameters=p, http_method='POST')
     if FORMATTER == 'json':
-        return simplejson.loads(urlopen(oauth_request.to_url(), urlencode(params)).read())
+        return get_data_json(simplejson.loads(urlopen(oauth_request.to_url(), urlencode(params)).read()))
     return get_data_xml(minidom.parseString(urlopen(oauth_request.to_url(), urlencode(params)).read()))
 
 
