@@ -4,7 +4,7 @@ Copyright (c) 2009 Music Pictures Ltd
 Author: Deepak Thukral
 License: MIT
 """
-
+import webbrowser
 from pyeviscape.utils import get_unauthorised_request_token, get_authorisation_url
 from pyeviscape.utils import exchange_request_token_for_access_token
 from pyeviscape.eviscape import Comments, Evis, Files, Members, Nodes
@@ -24,12 +24,13 @@ def get_access_token(request_token, verifier):
 try:
     request_token = get_request_token()
 
-    print "Please visit below url and approve application"
-    print authorize_url(request_token)
+    print "Please wait we are opening auth page in web browser ..."
+    webbrowser.open(authorize_url(request_token))
     print "Press enter verifier code after authorization ->"
     verifier = raw_input()
     access_token = get_access_token(request_token, verifier)
-except:#blind
+except Exception, e:#blind
+    print "Grrrr,", e
     print "WARNING: You might need to specify API_KEY and API_SECRET in config.py"
     print "You can get it from:"
     print "http://www.eviscape.com/apps/new"
