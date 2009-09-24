@@ -351,9 +351,9 @@ class Evis(object):
                                       nod_id=node.id, per_page=100, page=1)
         
         if FORMATTER == 'json':
-            return _handle_evis_json(data)[0]
+            return _handle_evis_json(data, compact=True)
         else:
-            return _handle_evis_xml(data)[0]
+            return _handle_evis_xml(data, compact=True)
         
     
     @classmethod

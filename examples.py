@@ -83,7 +83,7 @@ raw_input()
 
 print "Getting timeline for 'iapain'"
 for e in Evis.timeline(Members(id=13),n,access_token=access_token):
-    print e.subject
+    print e
 
 print "Press enter to continue ..."
 raw_input()
