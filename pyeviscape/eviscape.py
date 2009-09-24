@@ -263,7 +263,7 @@ class Nodes(object):
 class Evis(object):
     """ Represents Evis on Eviscape """
     def __init__(self, id, node, member=None, evi_subject=None, evi_body=None,\
-                 evi_type_id=None, evi_comment_count=None, evi_insert_date=None,\
+                 evi_type=None, evi_comment_count=None, evi_insert_date=None,\
                  evi_permalink=None, files=[], reverse_type_id=True):
         self.id = id
         self.node = node
@@ -271,10 +271,7 @@ class Evis(object):
         self.evi_subject = evi_subject
         self.evi_body = evi_body
         self.evi_insert_date = evi_insert_date
-        if reverse_type_id:
-            self.evi_type = get_evis_type(evi_type_id)
-        else:
-            self.evi_type = evi_type_id
+        self.evi_type = evi_type
         self.evi_permalink = evi_permalink
         self.evi_comment_count = evi_comment_count
         self.files = files
@@ -545,23 +542,6 @@ class Evis(object):
         return smart_str("Evis Object: %s (%s)" % (self.id, self.evi_permalink))
     
 
-def get_evis_type(typ_id, per_page=100, page=1):
-    """
-    Get evis type from type id
-    Usage: get_evis_type(typ_id=10)
-    Returns: String
-    Eviscape API Method: type.get
-    """
-    if typ_id is None:
-        return None
-    method = "type.get"
-    data = request_get(method, typ_id=typ_id, per_page=per_page, page=page)
-    if FORMATTER == 'json':
-        return data.get('objects', {})[0]['evistype'].get('typ_value', None)
-    if data.rsp.objects.evistype:
-        return data.rsp.objects.evistype.typ_value.text
-    return None
-
 def _handle_member_xml(data):
     "Handles xml data object for member"
     members = []
@@ -665,36 +645,35 @@ def _handle_member_json(data):
     return member
 
 
-def _parse_evis_json(e, reverse_type_id=True):
+def _parse_evis_json(e):
     evi = e.get('evis', {})
-    m = Members(int(evi.get('member', None)))
-    n = Nodes(int(evi.get('node', None)))
+    m = Members(int(evi.get('mem_id', None)), evi.get('mem_name', None))
+    n = Nodes(int(evi.get('nod_id', None)), evi.get('nod_name', None), m)
     return Evis(e.get('id', None),\
                 n,\
                 m,\
                 evi.get('evi_subject', None),\
                 evi.get('evi_body', None),\
-                evi.get('type', None),\
+                evi.get('typ_value', None),\
                 evi.get('evi_comment_count', None),\
                 evi.get('evi_insert_date', None),\
-                e.get('ref', None),\
-                reverse_type_id=reverse_type_id)
+                e.get('ref', None)
+    )
 
-def _parse_compact_evis_json(e, reverse_type_id=True):
+def _parse_compact_evis_json(e):
     evi = e.get('evis', {})
-    m = Members(int(evi.get('member', None)))
-    n = Nodes(int(evi.get('node', None)))
+    m = Members(int(evi.get('mem_id', None)), evi.get('mem_name', None))
+    n = Nodes(int(evi.get('nod_id', None)), evi.get('nod_name', None), m)
     return Evis(id=e.get('id', None),\
                 node=n,\
                 member=m,\
                 evi_subject=evi.get('evi_subject', None),\
                 evi_comment_count=evi.get('evi_comment_count', None),\
                 evi_permalink=e.get('ref', None),\
-                evi_insert_date=evi.get('evi_insert_date', None),\
-                reverse_type_id=reverse_type_id)
+                evi_insert_date=evi.get('evi_insert_date', None))
 
 def _parse_member_json(m):
-    mem = m.get('members', {})
+    mem = m.get('member', {})
     if mem.has_key('nod_id_primary'):
         n = Nodes(int(mem['nod_id_primary']))
     else:
@@ -785,8 +764,8 @@ def _parse_node(node):
 
 def _parse_evis(evis, reverse_type_id=True):
     "Parse Evis response"
-    m = Members(int(evis.member.text))
-    n = Nodes(int(evis.node.text))
+    m = Members(int(evis.mem_id.text))
+    n = Nodes(int(evis.nod_id.text))
     evi = Evis(evis.id, n, m, evis.evi_subject.text, evis.evi_body.text,\
              evis.type.text, evis.evi_comment_count.text, evis.evi_insert_date.text, evis.ref,\
              reverse_type_id=reverse_type_id)
@@ -794,8 +773,8 @@ def _parse_evis(evis, reverse_type_id=True):
 
 def _parse_compact_evis(evis, reverse_type_id=True):
     "Parse less informative evis response"
-    m = Members(int(evis.member.text))
-    n = Nodes(int(evis.node.text))
+    m = Members(int(evis.mem_id.text))
+    n = Nodes(int(evis.nod_id.text))
     evis = Evis(id=evis.id, node=n, member=m, evi_subject=evis.evi_subject.text,\
                 evi_comment_count=evis.evi_comment_count.text,\
                 evi_permalink=evis.ref, evi_insert_date=evis.evi_insert_date.text, reverse_type_id=reverse_type_id)
