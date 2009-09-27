@@ -8,7 +8,8 @@ The MIT License
 Copyright (c) 2009 MMIX Musicpictures Ltd, Berlin
 """
 
-
+import re
+from datetime import datetime
 import oauth, httplib
 from xml.dom import minidom
 from urllib import urlencode, urlopen
@@ -172,6 +173,7 @@ def get_data_xml(xml):
     return data
 
 def get_data_json(json):
+    print json
     if json['stat'] != 'ok':
         msg = "ERROR [%s]: %s" % (json['code'], json['msg'])
         raise EviscapeError, msg
@@ -206,7 +208,8 @@ def request_protected_post(method, access_token, **params):
     url = '%s?method=%s&format=%s&nojsoncallback&%s' % (API_URL, method, FORMATTER, urlencode(params))
     oauth_request = request_oauth_resource(CONSUMER, url, access_token, parameters=p, http_method='POST')
     if FORMATTER == 'json':
-        return get_data_json(simplejson.loads(urlopen(oauth_request.to_url(), urlencode(params)).read()))
+        dat = urlopen(oauth_request.to_url(), urlencode(params)).read()
+        return get_data_json(simplejson.loads(dat))
     return get_data_xml(minidom.parseString(urlopen(oauth_request.to_url(), urlencode(params)).read()))
 
 
@@ -240,3 +243,44 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
         return s.decode('utf-8', errors).encode(encoding, errors)
     else:
         return s
+
+def parseDateTime(s):
+    """Create datetime object representing date/time
+       expressed in a string
+    
+    Takes a string in the format produced by calling str()
+    on a python datetime object and returns a datetime
+    instance that would produce that string.
+    
+    Acceptable formats are: "YYYY-MM-DD HH:MM:SS.ssssss+HH:MM",
+                            "YYYY-MM-DD HH:MM:SS.ssssss",
+                            "YYYY-MM-DD HH:MM:SS+HH:MM",
+                            "YYYY-MM-DD HH:MM:SS"
+    Where ssssss represents fractional seconds.	 The timezone
+    is optional and may be either positive or negative
+    hours/minutes east of UTC.
+    """
+    if s is None:
+        return None
+    # Split string in the form 2007-06-18 19:39:25.3300-07:00
+    # into its constituent date/time, microseconds, and
+    # timezone fields where microseconds and timezone are
+    # optional.
+    m = re.match(r'(.*?)(?:\.(\d+))?(([-+]\d{1,2}):(\d{2}))?$',
+                 str(s))
+    datestr, fractional, tzname, tzhour, tzmin = m.groups()
+    
+    # Create tzinfo object representing the timezone
+    # expressed in the input string.  The names we give
+    # for the timezones are lame: they are just the offset
+    # from UTC (as it appeared in the input string).  We
+    # handle UTC specially since it is a very common case
+    # and we know its name.
+    if tzname is None:
+        tz = None
+    else:
+        tzhour, tzmin = int(tzhour), int(tzmin)
+        if tzhour == tzmin == 0:
+            tzname = 'UTC'
+        tz = FixedOffset(timedelta(hours=tzhour,
+                                   minutes=tzmin), tzname)

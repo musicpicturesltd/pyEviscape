@@ -17,7 +17,7 @@ import random
 import StringIO
 import time
 import urllib
-from utils import request_get, request_protected_get, request_protected_post, SERVER, smart_str
+from utils import request_get, request_protected_get, request_protected_post, SERVER, smart_str, parseDateTime
 from config import FORMATTER
     
     
@@ -42,7 +42,7 @@ class Comments(object):
         self.ecm_insert_date = ecm_insert_date
     
     @classmethod
-    def get(self, node, evis, access_token=None, per_page=100, page=1):
+    def get(self, node, evis, access_token=None, per_page=10, page=1):
         """
         Gets comments for an evis (optionally required access_token)
         Usage: Comments.get(Nodes(id=17), Evis(id=6259, Nodes(id=17))
@@ -62,7 +62,7 @@ class Comments(object):
             return _handle_comment_xml(data)
     
     @classmethod
-    def post(self, node, member, evis, comment_body, access_token, per_page=100, page=1):
+    def post(self, node, member, evis, comment_body, access_token, per_page=10, page=1):
         """
         Posts a comments for an evis (optionally required access_token)
         Usage: Comments.post(Nodes(id=17), Members(id=13), Evis(id=6259, Nodes(id=17), "Hello World")
@@ -92,7 +92,7 @@ class Members(object):
         self.primary_node = primary_node
         
     @classmethod
-    def get_by_token(self, access_token, per_page=100, page=1):
+    def get_by_token(self, access_token, per_page=10, page=1):
         """
         Get member via access_token
         Usage: Member.get_by_token(access_token)
@@ -108,7 +108,7 @@ class Members(object):
         
 
     @classmethod
-    def search(self, q, per_page=100, page=1):
+    def search(self, q, per_page=10, page=1):
         """
         Search members on eviscape
         Usage: Members.search("deepak")
@@ -148,7 +148,7 @@ class Nodes(object):
             self.nod_logo_image = None
         self.nod_strict = nod_strict
         
-    def get(self, access_token=None, per_page=100, page=1):
+    def get(self, access_token=None, per_page=10, page=1):
         """
         Get details of a Node/Profile/Evisite
         Usage: Nodes(id=17).get()
@@ -167,7 +167,7 @@ class Nodes(object):
             return _handle_node_xml(data)[0]
     
     
-    def listeners(self, access_token=None, per_page=100, page=1):
+    def listeners(self, access_token=None, per_page=10, page=1):
         """
         Get Listeners/Followers of a Node/Profile/Evisite
         Usage: Nodes(id=17).listeners()
@@ -186,7 +186,7 @@ class Nodes(object):
             return _handle_node_xml(data)
         
     
-    def speakers(self, access_token=None, per_page=100, page=1):
+    def speakers(self, access_token=None, per_page=10, page=1):
         """
         Get Nodes/Profile/Evisite which base node is Followering 
         Usage: Nodes(id=17).speakers()
@@ -205,7 +205,7 @@ class Nodes(object):
             return _handle_node_xml(data)
     
     @classmethod
-    def get_for_member(self, member_name, perms='write', access_token=None, per_page=100, page=1):
+    def get_for_member(self, member_name, perms='write', access_token=None, per_page=10, page=1):
         """
         Get Node/Profile/Evisite of a User/Member
         Usage: Nodes.get_for_memnber("iapain")
@@ -224,7 +224,7 @@ class Nodes(object):
             return _handle_node_xml(data)
     
     @classmethod
-    def created_by_member(self, member_name, access_token=None, per_page=100, page=1):
+    def created_by_member(self, member_name, access_token=None, per_page=10, page=1):
         """
         Get Node/Profile/Evisite which was created by User/Member
         Usage: Nodes.created_by_member("iapain")
@@ -243,7 +243,7 @@ class Nodes(object):
             return _handle_node_xml(data) 
     
     @classmethod
-    def search(self, q, per_page=100, page=1):
+    def search(self, q, per_page=10, page=1):
         """
         Searches Nodes/Evisite/Profile on eviscape (public only)
         Usage: Nodes.search('iapain')
@@ -277,7 +277,7 @@ class Evis(object):
         self.files = files
         
         
-    def get(self, access_token=None, per_page=100, page=1):
+    def get(self, access_token=None, per_page=10, page=1):
         """
         Get an Evis/Post/Article
         Usage: Evis(id=6369).get()
@@ -296,7 +296,7 @@ class Evis(object):
         else:
             return _handle_evis_xml(data)[0]
     
-    def get_files(self, access_token=None, per_page=100, page=1):
+    def get_files(self, access_token=None, per_page=10, page=1):
         """
         Get Files belongs to an Evis/Post/Article
         Usage: Evis(id=6369).get_files()
@@ -319,7 +319,7 @@ class Evis(object):
     
     @classmethod
     def post(self, evi_subject, evi_body, evi_type, member, node, evis_tags,\
-             access_token, evis_is_draft=False, per_page=100, page=1):
+             access_token, evis_is_draft=False, per_page=10, page=1):
         """
         Posts an Evis/Post/Article
         Usage: Evis.post('Cool', 'I am feeling cool', 'text', Members(id=13), Nodes(id=17), 'cool test')
@@ -331,7 +331,7 @@ class Evis(object):
                                       evi_body=evi_body, evi_type=evi_type,\
                                       mem_id=member.id, nod_id=node.id,\
                                       evi_tags=evis_tags, evis_is_draft=evis_is_draft,\
-                                      per_page=100, page=1)
+                                      per_page=per_page, page=page)
         
         if FORMATTER == 'json':
             return _handle_evis_json(data)[0]
@@ -339,7 +339,7 @@ class Evis(object):
             return _handle_evis_xml(data)[0]
             
     @classmethod
-    def timeline(self, member, node, access_token):
+    def timeline(self, member, node, access_token, per_page=10, page=1):
         """
         Get timeline for a member
         Usage: Evis.timeline(memberobj, nodeobj, 'token')
@@ -347,17 +347,17 @@ class Evis(object):
         Eviscape API method: evis.timeline
         """
         method = "evis.timeline"
-        data = request_protected_post(method, access_token, mem_id=member.id,\
-                                      nod_id=node.id, per_page=100, page=1)
+        data = request_protected_get(method, access_token, mem_id=member.id,\
+                                      nod_id=node.id, per_page=per_page, page=page)
         
         if FORMATTER == 'json':
-            return _handle_evis_json(data, compact=True)
+            return _handle_evis_json(data)
         else:
-            return _handle_evis_xml(data, compact=True)
+            return _handle_evis_xml(data)
         
     
     @classmethod
-    def xsearch(self, query, access_token=None):
+    def xsearch(self, query, access_token=None, per_page=10, page=1):
         """
         Search an Evis/Post/Article
         Usage: Evis.search('bon jovi OR metallica')
@@ -384,7 +384,7 @@ class Evis(object):
                     yield _parse_compact_evis(data.rsp.objects.evis)
     
     @classmethod
-    def xsent(self, node, access_token=None, per_page=100, page=1):
+    def xsent(self, node, access_token=None, per_page=10, page=1):
         """
         Get all posted Evis/Post/Article of a Node/Profile/Evisite
         Usage: Evis.xsent(Nodes(id=17))
@@ -410,7 +410,7 @@ class Evis(object):
                     yield _parse_evis(data.rsp.objects.evis)
                 
     @classmethod
-    def xreceived(self, member, node, access_token=None, per_page=100, page=1):
+    def xreceived(self, member, node, access_token=None, per_page=10, page=1):
         """
         Get all received Evis/Post/Article of a Node/Profile/Evisite
         Usage: Evis.xreceived(Member(id=13), Nodes(id=17))
@@ -436,7 +436,7 @@ class Evis(object):
                     yield _parse_compact_evis(data.rsp.objects.evis)
                 
     @classmethod
-    def xlatest(self, access_token=None, per_page=100, page=1):
+    def xlatest(self, access_token=None, per_page=10, page=1):
         """
         Get all latest evis
         Usage: Evis.xlatest()
@@ -462,7 +462,7 @@ class Evis(object):
                     yield _parse_compact_evis(data.rsp.objects.evis)
                 
     @classmethod
-    def search(self, query, access_token=None):
+    def search(self, query, access_token=None, per_page=10, page=1):
         """
         Search an Evis/Post/Article
         Usage: Evis.search('bon jovi OR metallica')
@@ -501,7 +501,7 @@ class Evis(object):
             return _handle_evis_xml(data)
     
     @classmethod
-    def received(self, member, node, access_token=None, per_page=100, page=1):
+    def received(self, member, node, access_token=None, per_page=10, page=1):
         """
         Get all received Evis/Post/Article of a Node/Profile/Evisite
         Usage: Evis.received(Member(id=13), Nodes(id=17))
@@ -520,7 +520,7 @@ class Evis(object):
             return _handle_evis_xml(data, compact=True)
     
     @classmethod
-    def latest(self, access_token=None, per_page=100, page=1):
+    def latest(self, access_token=None, per_page=10, page=1):
         """
         Get all latest Evis/Post/Article
         Usage: Evis.latest()
@@ -656,7 +656,7 @@ def _parse_evis_json(e):
                 evi.get('evi_body', None),\
                 evi.get('typ_value', None),\
                 evi.get('evi_comment_count', None),\
-                evi.get('evi_insert_date', None),\
+                parseDateTime(evi.get('evi_insert_date', None)),\
                 e.get('ref', None)
     )
 
@@ -670,7 +670,7 @@ def _parse_compact_evis_json(e):
                 evi_subject=evi.get('evi_subject', None),\
                 evi_comment_count=evi.get('evi_comment_count', None),\
                 evi_permalink=e.get('ref', None),\
-                evi_insert_date=evi.get('evi_insert_date', None))
+                evi_insert_date=parseDateTime(evi.get('evi_insert_date', None)))
 
 def _parse_member_json(m):
     mem = m.get('member', {})
@@ -767,7 +767,7 @@ def _parse_evis(evis, reverse_type_id=True):
     m = Members(int(evis.mem_id.text))
     n = Nodes(int(evis.nod_id.text))
     evi = Evis(evis.id, n, m, evis.evi_subject.text, evis.evi_body.text,\
-             evis.type.text, evis.evi_comment_count.text, evis.evi_insert_date.text, evis.ref,\
+             evis.type.text, evis.evi_comment_count.text, parseDateTime(evis.evi_insert_date.text), evis.ref,\
              reverse_type_id=reverse_type_id)
     return evi
 
@@ -777,7 +777,7 @@ def _parse_compact_evis(evis, reverse_type_id=True):
     n = Nodes(int(evis.nod_id.text))
     evis = Evis(id=evis.id, node=n, member=m, evi_subject=evis.evi_subject.text,\
                 evi_comment_count=evis.evi_comment_count.text,\
-                evi_permalink=evis.ref, evi_insert_date=evis.evi_insert_date.text, reverse_type_id=reverse_type_id)
+                evi_permalink=evis.ref, evi_insert_date=parseDateTime(evis.evi_insert_date.text), reverse_type_id=reverse_type_id)
     return evis
 
 def _parse_file(file):
