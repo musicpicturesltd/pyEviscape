@@ -36,7 +36,7 @@ def generate_timestamp():
 
 # util function: nonce
 # pseudorandom number
-def generate_nonce(length=8):
+def generate_nonce(length=40):
     return ''.join([str(random.randint(0, 9)) for i in range(length)])
 
 # OAuthConsumer is a data type that represents the identity of the Consumer

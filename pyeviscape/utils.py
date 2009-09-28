@@ -9,7 +9,7 @@ Copyright (c) 2009 MMIX Musicpictures Ltd, Berlin
 """
 
 import re
-from datetime import datetime
+from datetime import datetime, tzinfo, timedelta
 import oauth, httplib
 from xml.dom import minidom
 from urllib import urlencode, urlopen
@@ -244,6 +244,10 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     else:
         return s
 
+class TZ(tzinfo):
+    def utcoffset(self, dt): return timedelta(hours=2)
+
+ 
 def parseDateTime(s):
     """Create datetime object representing date/time
        expressed in a string
@@ -276,11 +280,18 @@ def parseDateTime(s):
     # from UTC (as it appeared in the input string).  We
     # handle UTC specially since it is a very common case
     # and we know its name.
-    if tzname is None:
-        tz = None
-    else:
-        tzhour, tzmin = int(tzhour), int(tzmin)
-        if tzhour == tzmin == 0:
-            tzname = 'UTC'
-        tz = FixedOffset(timedelta(hours=tzhour,
-                                   minutes=tzmin), tzname)
+    
+    # Convert the date/time field into a python datetime
+    # object.
+    x = datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
+    
+    # Convert the fractional second portion into a count
+    # of microseconds.
+    if fractional is None:
+        fractional = '0'
+    fracpower = 6 - len(fractional)
+    fractional = float(fractional) * (10 ** fracpower)
+    
+    # Return updated datetime object with microseconds and
+    # timezone information.
+    return x.replace(microsecond=int(fractional), tzinfo=TZ())

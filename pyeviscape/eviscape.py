@@ -374,14 +374,14 @@ class Evis(object):
         if FORMATTER == 'json':
             if isinstance(data.get('objects', None), list):
                 for evi in data['objects']:
-                    yield _parse_compact_evis(evi)
+                    yield _parse_evis(evi)
         else:
             if data.rsp.objects.__dict__.has_key('evis'):
                 if isinstance(data.rsp.objects.evis, list):
                     for evi in data.rsp.objects.evis:
-                        yield _parse_compact_evis(evi)
+                        yield _parse_evis(evi)
                 else:
-                    yield _parse_compact_evis(data.rsp.objects.evis)
+                    yield _parse_evis(data.rsp.objects.evis)
     
     @classmethod
     def xsent(self, node, access_token=None, per_page=10, page=1):
@@ -426,14 +426,14 @@ class Evis(object):
         if FORMATTER == 'json':
             if isinstance(data.get('objects', None), list):
                 for evi in data['objects']:
-                    yield _parse_compact_evis(evi)
+                    yield _parse_evis(evi)
         else:
             if data.rsp.objects.__dict__.has_key('evis'):
                 if isinstance(data.rsp.objects.evis, list):
                     for evi in data.rsp.objects.evis:
-                        yield _parse_compact_evis(evi)
+                        yield _parse_evis(evi)
                 else:
-                    yield _parse_compact_evis(data.rsp.objects.evis)
+                    yield _parse_evis(data.rsp.objects.evis)
                 
     @classmethod
     def xlatest(self, access_token=None, per_page=10, page=1):
@@ -452,14 +452,14 @@ class Evis(object):
         if FORMATTER == 'json':
             if isinstance(data.get('objects', None), list):
                 for evi in data['objects']:
-                    yield _parse_compact_evis(evi)
+                    yield _parse_evis(evi)
         else:
             if data.rsp.objects.__dict__.has_key('evis'):
                 if isinstance(data.rsp.objects.evis, list):
                     for evi in data.rsp.objects.evis:
-                        yield _parse_compact_evis(evi)
+                        yield _parse_evis(evi)
                 else:
-                    yield _parse_compact_evis(data.rsp.objects.evis)
+                    yield _parse_evis(data.rsp.objects.evis)
                 
     @classmethod
     def search(self, query, access_token=None, per_page=10, page=1):
@@ -477,9 +477,9 @@ class Evis(object):
                                          per_page=per_page, page=page)
             
         if FORMATTER == 'json':
-            return _handle_evis_json(data, compact=True)
+            return _handle_evis_json(data)
         else:
-            return _handle_evis_xml(data, compact=True)
+            return _handle_evis_xml(data)
     
     @classmethod
     def sent(self, node, access_token=None, per_page=100, page=1):
@@ -515,9 +515,9 @@ class Evis(object):
             data = request_protected_get(method, access_token, mem_id=member.id, nod_id=node.id,\
                                          per_page=per_page, page=page)
         if FORMATTER == 'json':
-            return _handle_evis_json(data, compact=True)
+            return _handle_evis_json(data)
         else:
-            return _handle_evis_xml(data, compact=True)
+            return _handle_evis_xml(data)
     
     @classmethod
     def latest(self, access_token=None, per_page=10, page=1):
@@ -534,9 +534,9 @@ class Evis(object):
             data = request_protected_get(method, access_token,\
                                          per_page=per_page, page=page)
         if FORMATTER == 'json':
-            return _handle_evis_json(data, compact=True)
+            return _handle_evis_json(data)
         else:
-            return _handle_evis_xml(data, compact=True)
+            return _handle_evis_xml(data)
     
     def __str__(self):
         return smart_str("Evis Object: %s (%s)" % (self.id, self.evi_permalink))
@@ -564,21 +564,15 @@ def _handle_node_xml(data):
             nodes = [_parse_node(data.rsp.objects.node)]
     return nodes
 
-def _handle_evis_xml(data, compact=False):
+def _handle_evis_xml(data):
     "Handles xml data for evis"
     evis = []
     if data.rsp.objects.__dict__.has_key('evis'):
         if isinstance(data.rsp.objects.evis, list):
             for evi in data.rsp.objects.evis:
-                if compact:
-                    evis.append(_parse_compact_evis(evi))
-                else:
-                    evis.append(_parse_evis(evi))
+                evis.append(_parse_evis(evi))
         else:
-            if compact:
-                evis = [_parse_compact_evis(data.rsp.objects.evis)]
-            else:
-                evis = [_parse_evis(data.rsp.objects.evis)]
+             evis = [_parse_evis(data.rsp.objects.evis)]
         return evis
     return None
 
@@ -599,15 +593,12 @@ def _handle_comment_json(data):
             comment.append(_parse_comment_json(c))
     return comment
 
-def _handle_evis_json(data, compact=False):
+def _handle_evis_json(data):
     "Handles json data for evis"
     evis = []
     if isinstance(data.get('objects', None), list):
         for evi in data['objects']:
-            if compact:
-                evis.append(_parse_compact_evis_json(evi))
-            else:
-                evis.append(_parse_evis_json(evi))
+            evis.append(_parse_evis_json(evi))
     return evis
 
 def _handle_file_xml(data):
@@ -648,34 +639,24 @@ def _handle_member_json(data):
 def _parse_evis_json(e):
     evi = e.get('evis', {})
     m = Members(int(evi.get('mem_id', None)), evi.get('mem_name', None))
-    n = Nodes(int(evi.get('nod_id', None)), evi.get('nod_name', None), m)
-    return Evis(e.get('id', None),\
-                n,\
-                m,\
-                evi.get('evi_subject', None),\
-                evi.get('evi_body', None),\
-                evi.get('typ_value', None),\
-                evi.get('evi_comment_count', None),\
-                parseDateTime(evi.get('evi_insert_date', None)),\
-                e.get('ref', None)
-    )
-
-def _parse_compact_evis_json(e):
-    evi = e.get('evis', {})
-    m = Members(int(evi.get('mem_id', None)), evi.get('mem_name', None))
-    n = Nodes(int(evi.get('nod_id', None)), evi.get('nod_name', None), m)
+    n = Nodes(int(evi.get('nod_id', None)), evi.get('nod_name', None), m, nod_logo_image=evi.get('nod_logo_image', None))
     return Evis(id=e.get('id', None),\
                 node=n,\
                 member=m,\
                 evi_subject=evi.get('evi_subject', None),\
+                evi_body=evi.get('evi_body', None),\
+                evi_type=evi.get('typ_value', None),\
                 evi_comment_count=evi.get('evi_comment_count', None),\
-                evi_permalink=e.get('ref', None),\
-                evi_insert_date=parseDateTime(evi.get('evi_insert_date', None)))
+                evi_insert_date=parseDateTime(evi.get('evi_insert_date', None)),\
+                evi_permalink=e.get('ref', None)
+    )
 
 def _parse_member_json(m):
     mem = m.get('member', {})
     if mem.has_key('nod_id_primary'):
-        n = Nodes(int(mem['nod_id_primary']))
+        n = Nodes(int(mem['nod_id_primary']), nod_logo_image = mem.get('nod_logo_image_primary', None),\
+                  nod_listener_count = mem.get('nod_listener_count_primary', None),\
+                  nod_name = mem.get('nod_name_primary', None))
     else:
         n = None
     return Members(m.get('id', None),\
@@ -770,15 +751,6 @@ def _parse_evis(evis, reverse_type_id=True):
              evis.type.text, evis.evi_comment_count.text, parseDateTime(evis.evi_insert_date.text), evis.ref,\
              reverse_type_id=reverse_type_id)
     return evi
-
-def _parse_compact_evis(evis, reverse_type_id=True):
-    "Parse less informative evis response"
-    m = Members(int(evis.mem_id.text))
-    n = Nodes(int(evis.nod_id.text))
-    evis = Evis(id=evis.id, node=n, member=m, evi_subject=evis.evi_subject.text,\
-                evi_comment_count=evis.evi_comment_count.text,\
-                evi_permalink=evis.ref, evi_insert_date=parseDateTime(evis.evi_insert_date.text), reverse_type_id=reverse_type_id)
-    return evis
 
 def _parse_file(file):
     "Parse file response"
