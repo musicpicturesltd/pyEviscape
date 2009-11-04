@@ -10,10 +10,10 @@ Copyright (c) 2009 MMIX Musicpictures Ltd, Berlin
 
 import re
 from datetime import datetime, tzinfo, timedelta
-import oauth, httplib
 from xml.dom import minidom
 from urllib import urlencode, urlopen
 import urlparse
+import oauth
 from urllib3 import HTTPConnectionPool
 from config import API_KEY, API_SECRET, FORMATTER
 
@@ -37,7 +37,6 @@ CONSUMER_KEY = API_KEY
 CONSUMER_SECRET = API_SECRET
 
 CONSUMER = oauth.OAuthConsumer(CONSUMER_KEY, CONSUMER_SECRET)
-CONNECTION = httplib.HTTPConnection(SERVER)
 
 http_pool = HTTPConnectionPool.from_url(API_URL)
 
@@ -56,14 +55,6 @@ def request_oauth_resource(consumer, url, access_token, parameters=None, signatu
     oauth_request.sign_request(signature_method, consumer, access_token)
     return oauth_request
 
-
-def fetch_response(oauth_request, connection=CONNECTION):
-    url = oauth_request.to_url()
-    connection.request(oauth_request.http_method, url)
-    response = connection.getresponse()
-    s = response.read()
-    return s
-
 def fetch_urllib(oauth_request, params={}):
     url = oauth_request.to_url()
     if oauth_request.http_method == 'post':
@@ -78,7 +69,7 @@ def get_unauthorised_request_token(callback=None, consumer=CONSUMER, signature_m
         consumer, oauth_callback=callback, http_url=REQUEST_TOKEN_URL
     )
     oauth_request.sign_request(signature_method, consumer, None)
-    resp = fetch_response(oauth_request)
+    resp = fetch_urllib(oauth_request)
     token = oauth.OAuthToken.from_string(resp)
     return token
 
