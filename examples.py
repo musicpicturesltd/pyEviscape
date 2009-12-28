@@ -42,9 +42,6 @@ except Exception, e:#blind
 print "Searching 'deepak' on Eviscape ..."
 for m in Members.search('deepak'):
     print m
-    
-print "Press enter to continue ..."
-raw_input()
 
 print "Search 'simon' on Eviscape (Nodes)..."
 for n in Nodes.search('simon'):
